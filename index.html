@@ -1,101 +1,101 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Love</title>
+  <title>Mưa Chữ 3D</title>
+  <style>
+    body { margin: 0; overflow: hidden; background: black; }
+    canvas { display: block; }
+  </style>
   <script src="https://cdn.jsdelivr.net/npm/three@0.152.2/build/three.min.js"></script>
 </head>
 <body>
-<style>body {
-  margin: 0;
-  background: #000;
-  color: #fff;
-  font-weight: 100;touch-action:none
-}</style>
 <script>
-const texts = ["PHẠM TUẤN HẢI  ❤️ TAO VẪN LUÔN TIN TƯỞNG M","GEMLOGIN TOOl ❤️ DÙ MỌI NGƯỜI NÓI GÌ M","TUANHAII  ❤️ T VẪN LUÔN HỢP TÁC VỚI M","ĐỪNG ĐỂ AI NÓI GÌ MÀ LỤY NHA  ❤️"];
-const audioin = "nnca";
+  // ===== Scene setup =====
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
+  const renderer = new THREE.WebGLRenderer({antialias: true});
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  document.body.appendChild(renderer.domElement);
+
+  const loader = new THREE.FontLoader();
+  const texts = [
+    "PHẠM TUẤN HẢI ❤️ TAO VẪN LUÔN TIN TƯỞNG M",
+    "GEMLOGIN TOOL ❤️ DÙ MỌI NGƯỜI NÓI GÌ M",
+    "TUANHAII ❤️ T VẪN LUÔN HỢP TÁC VỚI M",
+    "ĐỪNG ĐỂ AI NÓI GÌ MÀ LỤY NHA ❤️"
+  ];
+
+  let textMeshes = [];
+
+  loader.load("https://threejs.org/examples/fonts/helvetiker_regular.typeface.json", function(font) {
+    texts.forEach((t, i) => {
+      for (let j = 0; j < 20; j++) { // tạo nhiều lần cho giống mưa
+        const geometry = new THREE.TextGeometry(t, {
+          font: font,
+          size: 3,
+          height: 0.5,
+          curveSegments: 12,
+        });
+        const material = new THREE.MeshBasicMaterial({ color: 0xff66cc });
+        const mesh = new THREE.Mesh(geometry, material);
+
+        // Random vị trí ban đầu
+        mesh.position.set(
+          (Math.random() - 0.5) * 300, // ngang
+          Math.random() * 200,         // cao
+          (Math.random() - 0.5) * 200  // sâu
+        );
+
+        scene.add(mesh);
+        textMeshes.push(mesh);
+      }
+    });
+  });
+
+  // ===== Star background =====
+  const starGeometry = new THREE.BufferGeometry();
+  const starCount = 500;
+  const starVertices = [];
+  for (let i = 0; i < starCount; i++) {
+    starVertices.push(
+      (Math.random() - 0.5) * 1000,
+      (Math.random() - 0.5) * 1000,
+      (Math.random() - 0.5) * 1000
+    );
+  }
+  starGeometry.setAttribute('position', new THREE.Float32BufferAttribute(starVertices, 3));
+  const starMaterial = new THREE.PointsMaterial({ color: 0xffffff, size: 1 });
+  const stars = new THREE.Points(starGeometry, starMaterial);
+  scene.add(stars);
+
+  // ===== Camera =====
+  camera.position.z = 150;
+
+  // ===== Animate =====
+  function animate() {
+    requestAnimationFrame(animate);
+
+    textMeshes.forEach(mesh => {
+      mesh.position.y -= 0.2; // tốc độ rơi (giảm nhỏ thì rơi chậm hơn)
+      if (mesh.position.y < -100) {
+        mesh.position.y = 150; // reset lại trên cao
+        mesh.position.x = (Math.random() - 0.5) * 300;
+        mesh.position.z = (Math.random() - 0.5) * 200;
+      }
+    });
+
+    renderer.render(scene, camera);
+  }
+  animate();
+
+  // ===== Resize =====
+  window.addEventListener("resize", () => {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+  });
 </script>
-<div id="threejs-canvas"></div>
-
-  <style>
-    #toggle-music {
-      position: fixed;
-      top: 16px;
-      right: 16px;
-      background: none;
-      border: 2px solid #fff;
-      border-radius: 50%;
-      cursor: pointer;
-      color: #fff;
-      padding: 6px;
-      transition: transform 0.2s ease;
-      z-index: 999999;
-    }
-    #toggle-music.playing #icon-note,
-    #toggle-music.playing #icon-note-slash {
-      animation: spin 3s linear infinite;
-    }
-    #toggle-music svg { display: block; }
-    @keyframes spin {
-      from { transform: rotate(0deg);}
-      to { transform: rotate(360deg);}
-    }
-  </style>
-  <!-- Audio element (ẩn) -->
-  <audio id="bg-audio" autoplay preload="auto" loop></audio>
-  <script>
-    document.getElementById('bg-audio').src = 'music/' + audioin + '.mp3';
-  </script>
-  <!-- Nút toggle -->
-  <button id="toggle-music" aria-label="Bật/Tắt nhạc">
-    <svg id="icon-note" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
-      <path d="M12 3v10.55A4 4 0 1 0 14 17V7h4V3h-6z" fill="currentColor"/>
-    </svg>
-    <svg id="icon-note-slash" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" style="display: none;">
-      <path d="M10 3v10.55A4 4 0 1 0 12 15.55V5h4V3h-6z" fill="currentColor"/>
-      <line x1="3" y1="3" x2="21" y2="21" stroke="currentColor" stroke-width="2"/>
-    </svg>
-  </button>
-  <script>
-    const toggleBtn = document.getElementById("toggle-music");
-    const audio = document.getElementById("bg-audio");
-    const iconNote = document.getElementById("icon-note");
-    const iconNoteSlash = document.getElementById("icon-note-slash");
-    let isPlaying = false;
-    function updateIcon() {
-      if (isPlaying) {
-        iconNote.style.display = "block";
-        iconNoteSlash.style.display = "none";
-        toggleBtn.classList.add("playing");
-      } else {
-        iconNote.style.display = "none";
-        iconNoteSlash.style.display = "block";
-        toggleBtn.classList.remove("playing");
-      }
-    }
-    toggleBtn.addEventListener("click", () => {
-      if (!isPlaying) {
-        const playPromise = audio.play();
-        if (playPromise !== undefined) {
-          playPromise.then(() => {
-            isPlaying = true; updateIcon();
-          }).catch((err) => {
-            isPlaying = false; updateIcon();
-          });
-        } else {
-          isPlaying = true; audio.play(); updateIcon();
-        }
-      } else {
-        audio.pause(); isPlaying = false; updateIcon();
-      }
-    });
-    document.addEventListener("DOMContentLoaded", () => {
-      isPlaying = false; updateIcon();
-    });
-  </script>
-
-<script type="module" src="script.js?v=01"></script>
 </body>
 </html>
